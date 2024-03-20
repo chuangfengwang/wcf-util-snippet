@@ -1,0 +1,132 @@
+<configuration scan="false">
+    <property name="LOG_HOME" value="${log.dir}" />
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}] [%thread][%highlight(%level)] [%cyan(%logger{5}:%line)] %msg%n" />
+    <!--  对于带色彩高亮的格式,tcloud日志解析遇到困难,下面的格式不带色彩高亮  -->
+    <!-- value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}] [%thread][%level] [%logger{5}:%line] %msg%n" />-->
+
+    <appender name="STDOUT"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="INFO"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/info.log</file>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/info/info.log-%d{yyyy-MM-dd}-%i.log
+            </fileNamePattern>
+            <maxFileSize>10GB</maxFileSize>
+            <maxHistory>5</maxHistory>
+            <totalSizeCap>55GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <appender name="WARN"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/warn.log</file>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/warn/warn-%d{yyyy-MM-dd}-%i.log
+            </fileNamePattern>
+            <maxFileSize>1GB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <appender name="ERROR"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/error.log</file>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/error/error-%d{yyyy-MM-dd}-%i.log
+            </fileNamePattern>
+            <maxFileSize>1GB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="trace" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/trace.log</file>
+        <Append>true</Append>
+        <encoder>
+            <pattern>%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/trace/trace-%d{yyyy-MM-dd-HH}.log</FileNamePattern>
+            <!--日志文件保留个数-->
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="async-trace" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>90</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>4096</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="trace"/>
+    </appender>
+    <logger name="cn.techwolf.trace.utils.SpanLogger" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="async-trace"/>
+    </logger>
+    <logger name="cn.techwolf.arsenal.serving.handler" level="INFO"></logger>
+    <logger name="cn.techwolf.arsenal" level="INFO"></logger>
+    <logger name="cn.techwolf.arsenal.serving.client.maas.invoker.AbstractInvoker" level="INFO"></logger>
+
+    <appender name="metric_file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/metrics_error.log</file>
+        <Append>true</Append>
+        <encoder>
+            <pattern>%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/metrics_log/metric_error-%d{yyyy-MM-dd-HH}.log</FileNamePattern>
+            <MaxHistory>1</MaxHistory>
+        </rollingPolicy>
+    </appender>
+    <logger name="cn.techwolf.metrics" level="WARN" additivity="false">
+        <appender-ref ref="metric_file"/>
+    </logger>
+
+    <logger name="cn.techwolf.arsenal.serving.client.maas.invoker.AbstractInvoker" level="INFO"/>
+    <logger name="io.grpc.internal.ManagedChannelOrphanWrapper" level="OFF"/>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="INFO" />
+        <appender-ref ref="WARN" />
+        <appender-ref ref="ERROR" />
+    </root>
+</configuration>
