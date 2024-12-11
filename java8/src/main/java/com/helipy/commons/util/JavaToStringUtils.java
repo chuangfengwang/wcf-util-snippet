@@ -1,7 +1,6 @@
 package com.helipy.commons.util;
 
 import com.google.common.base.Splitter;
-import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
